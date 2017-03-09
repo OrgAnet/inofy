@@ -2,6 +2,7 @@ package org.organet.inofy;
 
 import java.sql.*;
 
+// TODO Write Storage interface and SharedFileStorage class
 class Storage {
   private static Connection connection;
 
@@ -25,16 +26,16 @@ class Storage {
       System.out.println(e.getMessage());
     }
 
-    System.out.println("Connection created.");
+    System.out.println("[ INFO ] Storage.initialize | Connection created.");
 
     Statement stmt;
     try {
       connection.setAutoCommit(false);
 
       stmt = connection.createStatement();
-      stmt.execute("CREATE TABLE Files (id INT AUTO_INCREMENT PRIMARY KEY, path VARCHAR(256), hash VARCHAR(256));");
+      stmt.execute("CREATE TABLE Files (id INT AUTO_INCREMENT PRIMARY KEY, key VARCHAR(256), path VARCHAR(256), mime VARCHAR(64), hash VARCHAR(256), size INT, keywords VARCHAR(256));");
     } catch (SQLException e) {
-      System.out.println("Can not create statement for 'initialize'.");
+      System.out.println("[ERROR ] Storage.initialize | Can not create SQL statement.");
     }
   }
 
@@ -44,13 +45,16 @@ class Storage {
       connection.setAutoCommit(false);
 
       stmt = connection.createStatement();
-      ResultSet rs = stmt.executeQuery(String.format("SELECT COUNT(*) AS CNT FROM Files WHERE path='%s';", key));
+      ResultSet rs = stmt.executeQuery(String.format("SELECT COUNT(*) AS CNT FROM Files WHERE key='%s';", key));
 
       if (rs.next()) {
         return (rs.getInt("CNT") == 1);
       }
     } catch (SQLException e) {
-      System.out.println("Can not create statement for 'exists'.");
+      System.out.println(String.format(
+        "[ERROR ] Storage.exists | Can not create SQL statement where key is '%s'.",
+        key
+      ));
     }
 
     return false;
@@ -65,7 +69,10 @@ class Storage {
       stmt = connection.createStatement();
       stmt.execute(String.format("UPDATE Files SET path='%s', hash='%s' WHERE path='%s';", key, value, key));
     } catch (SQLException e) {
-      System.out.println("Error while updating.");
+      System.out.println(String.format(
+        "[ERROR ] Storage.update | Can not update where key is '%s' and value is '%s'.",
+        key, value
+      ));
     }
   }
 
@@ -78,7 +85,10 @@ class Storage {
       stmt = connection.createStatement();
       stmt.execute(String.format("INSERT INTO Files (path, hash) VALUES('%s', '%s');", key, value));
     } catch (SQLException e) {
-      System.out.println("Error while inserting.");
+      System.out.println(String.format(
+        "[ERROR ] Storage.insert | Error while inserting where key is '%s'.",
+        key
+      ));
     }
   }
 
@@ -103,7 +113,10 @@ class Storage {
         return rs.getString("hash");
       }
     } catch (SQLException e) {
-      System.out.println("Error while getting.");
+      System.out.println(String.format(
+        "[ERROR ] Storage.get | Error while getting where key is '%s'.",
+        key
+      ));
     }
 
     return null;
@@ -118,7 +131,10 @@ class Storage {
       stmt = connection.createStatement();
       stmt.execute(String.format("DELETE FROM Files WHERE path='%s';", key));
     } catch (SQLException e) {
-      System.out.println("Error while deleting.");
+      System.out.println(String.format(
+        "[ERROR ] Storage.delete | Error while deleting where key is '%s'.",
+        key
+      ));
     }
   }
 

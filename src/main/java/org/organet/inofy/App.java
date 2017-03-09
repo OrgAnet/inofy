@@ -13,7 +13,8 @@ public class App {
   public static void main(String[] args) {
     Options options = new Options();
 
-    options.addOption("S", "shared-dir", true, "Absolute directory path to shared files and folders.");
+    options.addOption("p", "shared-path", true, "Absolute directory path to shared files and folders.");
+    options.addOption("w", "no-init-walk", false, "Do not walk the shared directory while application initialization.");
     // TODO Add CLI arguments here
 
     CommandLineParser parser = new GnuParser();
@@ -21,21 +22,21 @@ public class App {
     try {
       cmd = parser.parse(options, args);
     } catch (ParseException e) {
-      System.out.println("Could not parse the commandline arguments. Aborting.");
+      System.out.println("[ERROR ] main | Could not parse the commandline arguments. Aborting.");
 
       return;
     }
 
     // Set global variables by CLI arguments
-    if (cmd.hasOption('S')) {
-      sharedDirPath = cmd.getOptionValue('S');
+    if (cmd.hasOption('p')) {
+      sharedDirPath = cmd.getOptionValue('p');
     }
 
     // Update variables which depends CLI arguments
     sharedDir = new File(sharedDirPath);
 
     if (!sharedDir.isDirectory()) {
-      System.out.println("Error: OrgAnet shared directory was not set properly. Aborting.");
+      System.out.println("[ERROR ] main | Shared directory was not set properly. Aborting.");
 
       return;
     }
@@ -44,11 +45,16 @@ public class App {
     Storage.initialize();
 
     // Walk shared directory directory for indexing files
-    File[] sharedFiles = sharedDir.listFiles();
-    if (sharedFiles != null) {
-      for (File child : sharedFiles) {
-        String filePath = child.toString();
-        indexFile(filePath);
+    if (cmd.hasOption('w')) {
+      System.out.println("[ INFO ] main | No shared directory walk.");
+    } else {
+      File[] sharedFiles = sharedDir.listFiles();
+
+      if (sharedFiles != null) {
+        for (File child : sharedFiles) {
+          String filePath = child.toString();
+          indexFile(filePath);
+        }
       }
     }
 
@@ -65,7 +71,7 @@ public class App {
     try {
       String fileHash = Hasher.calculateFileHash(path);
 
-      System.out.println(String.format("SHA-256 hash of '%s' is '%s'.", path, fileHash));
+      System.out.println(String.format("[ INFO ] indexFile | SHA-256 hash of '%s' is '%s'.", path, fileHash));
 
       Storage.crud(path, fileHash);
     } catch (IOException e) {

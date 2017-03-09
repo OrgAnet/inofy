@@ -5,12 +5,11 @@ import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.attribute.*;
 import java.io.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 class Watcher {
   private final WatchService watcher;
-  private final Map<WatchKey,Path> keys;
+  private final Map<WatchKey, Path> keys;
   private boolean recursive = false;
   private boolean trace = false;
 
@@ -28,9 +27,14 @@ class Watcher {
     this.recursive = recursive;
 
     if (recursive) {
-      System.out.format("Scanning %s ...\n", dir);
+      System.out.println(String.format(
+        "[ INFO ] Watcher | Scanning %s...",
+        dir
+      ));
+
       registerAll(dir);
-      System.out.println("Done.");
+
+      System.out.println("[ INFO ] Watcher | Scan is done.");
     } else {
       register(dir);
     }
@@ -51,6 +55,7 @@ class Watcher {
     if (trace) {
       Path prev = keys.get(key);
       if (prev == null) {
+        // TODO Continue formatting printed text
         System.out.format("register: %s\n", dir);
       } else {
         if (!dir.equals(prev)) {
@@ -69,10 +74,9 @@ class Watcher {
     // register directory and sub-directories
     Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
       @Override
-      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-        throws IOException
-      {
+      public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         register(dir);
+
         return FileVisitResult.CONTINUE;
       }
     });
@@ -115,8 +119,9 @@ class Watcher {
 
         // HACK The line below added
         if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS)) {
-          String filePath = child.toString();
-          App.indexFile(filePath);
+          SharedFileStorage.store(new SharedFile(child.toString()));
+          //String filePath = child.toString();
+          //App.indexFile(filePath);
         }
 
         // if directory is created, and watching recursively, then
