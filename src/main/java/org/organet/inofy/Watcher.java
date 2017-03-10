@@ -119,9 +119,7 @@ class Watcher {
 
         // HACK The line below added
         if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS)) {
-          SharedFileStorage.store(new SharedFile(child.toString()));
-          //String filePath = child.toString();
-          //App.indexFile(filePath);
+          App.storage.insert(new SharedFile(child.toString()));
         }
 
         // if directory is created, and watching recursively, then

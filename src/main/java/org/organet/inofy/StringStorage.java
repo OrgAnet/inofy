@@ -2,8 +2,8 @@ package org.organet.inofy;
 
 import java.sql.*;
 
-// TODO Write Storage interface and SharedFileStorage class
-class Storage {
+// TODO Write StringStorage interface and SharedFileStorage class
+class StringStorage {
   private static Connection connection;
 
   private static final String DB_DRIVER = "org.h2.Driver";
@@ -12,7 +12,7 @@ class Storage {
   private static final String DB_PASSWORD = "";
 
   static void initialize() {
-    Storage.connection = null;
+    StringStorage.connection = null;
 
     try {
       Class.forName(DB_DRIVER);
@@ -21,21 +21,21 @@ class Storage {
     }
 
     try {
-      Storage.connection = DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
+      StringStorage.connection = DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
     } catch (SQLException e) {
       System.out.println(e.getMessage());
     }
 
-    System.out.println("[ INFO ] Storage.initialize | Connection created.");
+    System.out.println("[ INFO ] StringStorage.initialize | Connection created.");
 
     Statement stmt;
     try {
       connection.setAutoCommit(false);
 
       stmt = connection.createStatement();
-      stmt.execute("CREATE TABLE Files (id INT AUTO_INCREMENT PRIMARY KEY, key VARCHAR(256), path VARCHAR(256), mime VARCHAR(64), hash VARCHAR(256), size INT, keywords VARCHAR(256));");
+      stmt.execute("CREATE TABLE Files (id INT AUTO_INCREMENT PRIMARY KEY, key VARCHAR(256), path VARCHAR(256), mime VARCHAR(64), hash VARCHAR(256), size INT, last_modified BIGINT, keywords VARCHAR(256));");
     } catch (SQLException e) {
-      System.out.println("[ERROR ] Storage.initialize | Can not create SQL statement.");
+      System.out.println("[ERROR ] StringStorage.initialize | Can not create SQL statement.");
     }
   }
 
@@ -52,7 +52,7 @@ class Storage {
       }
     } catch (SQLException e) {
       System.out.println(String.format(
-        "[ERROR ] Storage.exists | Can not create SQL statement where key is '%s'.",
+        "[ERROR ] StringStorage.exists | Can not create SQL statement where key is '%s'.",
         key
       ));
     }
@@ -70,7 +70,7 @@ class Storage {
       stmt.execute(String.format("UPDATE Files SET path='%s', hash='%s' WHERE path='%s';", key, value, key));
     } catch (SQLException e) {
       System.out.println(String.format(
-        "[ERROR ] Storage.update | Can not update where key is '%s' and value is '%s'.",
+        "[ERROR ] StringStorage.update | Can not update where key is '%s' and value is '%s'.",
         key, value
       ));
     }
@@ -86,7 +86,7 @@ class Storage {
       stmt.execute(String.format("INSERT INTO Files (path, hash) VALUES('%s', '%s');", key, value));
     } catch (SQLException e) {
       System.out.println(String.format(
-        "[ERROR ] Storage.insert | Error while inserting where key is '%s'.",
+        "[ERROR ] StringStorage.insert | Error while inserting where key is '%s'.",
         key
       ));
     }
@@ -114,7 +114,7 @@ class Storage {
       }
     } catch (SQLException e) {
       System.out.println(String.format(
-        "[ERROR ] Storage.get | Error while getting where key is '%s'.",
+        "[ERROR ] StringStorage.get | Error while getting where key is '%s'.",
         key
       ));
     }
@@ -132,7 +132,7 @@ class Storage {
       stmt.execute(String.format("DELETE FROM Files WHERE path='%s';", key));
     } catch (SQLException e) {
       System.out.println(String.format(
-        "[ERROR ] Storage.delete | Error while deleting where key is '%s'.",
+        "[ERROR ] StringStorage.delete | Error while deleting where key is '%s'.",
         key
       ));
     }

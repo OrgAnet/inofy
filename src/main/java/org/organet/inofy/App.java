@@ -1,14 +1,26 @@
 package org.organet.inofy;
 
 import org.apache.commons.cli.*;
+import org.organet.inofy.Tuple.TupleType;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public class App {
+  static final String FIELDS_SEPARATOR = ",";
+  static final String VALUE_SEPARATOR = "=";
+
+
   private static String sharedDirPath = "/home/ozan/organet_shared";
   private static File sharedDir;
+
+  static InMemoryStorage<SharedFile> storage = null;
+  static final TupleType Triple = TupleType.DefaultFactory.create(
+    String.class,
+    String.class,
+    String.class
+  );
 
   public static void main(String[] args) {
     Options options = new Options();
@@ -42,7 +54,8 @@ public class App {
     }
 
     // Initialize in-memory DB connection
-    Storage.initialize();
+    //StringStorage.initialize();
+    storage = new InMemoryStorage<>();
 
     // Walk shared directory directory for indexing files
     if (cmd.hasOption('w')) {
@@ -52,11 +65,15 @@ public class App {
 
       if (sharedFiles != null) {
         for (File child : sharedFiles) {
-          String filePath = child.toString();
-          indexFile(filePath);
+          storage.insert(SharedFile.fromFile(child));
         }
       }
     }
+
+    // TEST - TEST - TEST - TEST - TEST - TEST
+    SharedFile foo = storage.get(1);
+    System.out.println(foo.getPath());
+    // TEST - TEST - TEST - TEST - TEST - TEST
 
     // Watch the shared directory directory recursively for changes
     // (create, modify and delete) and update DB accordingly
@@ -73,7 +90,7 @@ public class App {
 
       System.out.println(String.format("[ INFO ] indexFile | SHA-256 hash of '%s' is '%s'.", path, fileHash));
 
-      Storage.crud(path, fileHash);
+      StringStorage.crud(path, fileHash);
     } catch (IOException e) {
       e.printStackTrace();
     } catch (NoSuchAlgorithmException e) {
