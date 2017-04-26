@@ -1,5 +1,10 @@
-package org.organet.inofy;
+package org.organet.inofy.Persistance;
 
+import org.organet.inofy.App;
+import org.organet.inofy.Deserializer;
+import org.organet.inofy.Persistable;
+import org.organet.inofy.Serializer;
+import org.organet.inofy.SharedFile.SharedFile;
 import org.organet.inofy.Tuple.Tuple;
 
 import java.sql.*;
@@ -8,18 +13,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-class InMemoryStorage<V extends SerializesFields> implements Storage<V> {
+public class InMemoryStorage<V extends Persistable> implements Storage<V> {
   private static final String DB_DRIVER = "org.h2.Driver";
   private static final String DB_CONNECTION = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
   private static final String DB_USER = "sa";
   private static final String DB_PASSWORD = "";
   private static final String DB_TABLE = "File";
 
-  private static Connection connection = null;
+  private Serializer serializer = null;
+  private Deserializer<V> deserializer = null;
+  private Connection connection = null;
 
 
-  InMemoryStorage() {
-    initialize();
+  public InMemoryStorage(Serializer serializer, Deserializer<V> deserializer) {
+    initialize(serializer, deserializer);
   }
 
 
@@ -68,7 +75,10 @@ class InMemoryStorage<V extends SerializesFields> implements Storage<V> {
   }
 
   @Override
-  public boolean initialize() {
+  public boolean initialize(Serializer serializer, Deserializer<V> deserializer) {
+    this.serializer = serializer;
+    this.deserializer = deserializer;
+
     if (!connect()) {
       return false;
     }
@@ -86,7 +96,8 @@ class InMemoryStorage<V extends SerializesFields> implements Storage<V> {
   @Override
   public void insert(V value) {
     // Construct query
-    List<Tuple> serializedFields = value.serializeFields();
+    List<Tuple> serializedFields = serializer.serializeFields(value);
+    //List<Tuple> serializedFields = value.serializeFields();
     StringBuilder fieldNames = new StringBuilder();
     StringBuilder serializedFieldsString = new StringBuilder();
 
@@ -133,9 +144,9 @@ class InMemoryStorage<V extends SerializesFields> implements Storage<V> {
     // Extract column names
     Map<String, String> results = executeQuery(query);
 
-    if (results == null) {
+    if (results == null || results.size() == 0) {
       System.out.println(String.format(
-        "[ERROR ] InMemoryStorage.get | No results were returned for ID of '%s'.",
+        "[ WARN ] InMemoryStorage.get | No results were returned for ID of '%s'.",
         id.toString()
       ));
 

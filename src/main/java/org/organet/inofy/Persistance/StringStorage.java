@@ -1,9 +1,9 @@
-package org.organet.inofy;
+package org.organet.inofy.Persistance;
 
 import java.sql.*;
 
 // TODO Write StringStorage interface and SharedFileStorage class
-class StringStorage {
+public class StringStorage {
   private static Connection connection;
 
   private static final String DB_DRIVER = "org.h2.Driver";
@@ -146,7 +146,7 @@ class StringStorage {
     return get(key);
   }
 
-  static String crud(String key, String value) {
+  public static String crud(String key, String value) {
     if (key == null) {
       return null;
     }

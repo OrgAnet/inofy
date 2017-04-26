@@ -1,5 +1,7 @@
 package org.organet.inofy;
 
+import org.organet.inofy.SharedFile.SharedFile;
+
 import java.nio.file.*;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;

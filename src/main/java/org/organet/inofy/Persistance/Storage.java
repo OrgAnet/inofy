@@ -1,7 +1,10 @@
-package org.organet.inofy;
+package org.organet.inofy.Persistance;
+
+import org.organet.inofy.Deserializer;
+import org.organet.inofy.Serializer;
 
 interface Storage<T> {
-  boolean initialize();
+  boolean initialize(Serializer serializer, Deserializer<T> deserializer);
 
   // TODO Make this method so that is returns the 'id' of the record
   void insert(T value);

@@ -5,7 +5,7 @@ import org.organet.inofy.Tuple.Tuple;
 import java.io.Serializable;
 import java.util.List;
 
-interface SerializesFields extends Serializable {
+public interface SerializesFields extends Serializable {
   //List<String> getFieldNames();
   // TODO Create 'IncludeSerialization' annotation class (with custom field name argument - for serialization)
   // TODO the method below MUST ONLY return annotated fields

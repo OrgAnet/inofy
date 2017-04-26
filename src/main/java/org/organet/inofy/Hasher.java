@@ -6,8 +6,8 @@ import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-class Hasher {
-  static String calculateFileHash(String path) throws IOException, NoSuchAlgorithmException {
+public class Hasher {
+  public static String calculateFileHash(String path) throws IOException, NoSuchAlgorithmException {
     int buff = 16384;
     try {
       RandomAccessFile file = new RandomAccessFile(path, "r");

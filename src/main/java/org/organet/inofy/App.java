@@ -1,6 +1,11 @@
 package org.organet.inofy;
 
 import org.apache.commons.cli.*;
+import org.organet.inofy.Persistance.InMemoryStorage;
+import org.organet.inofy.Persistance.StringStorage;
+import org.organet.inofy.SharedFile.SharedFile;
+import org.organet.inofy.SharedFile.SharedFileDeserializer;
+import org.organet.inofy.SharedFile.SharedFileSerializer;
 import org.organet.inofy.Tuple.TupleType;
 
 import java.io.File;
@@ -8,7 +13,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public class App {
-  static final String FIELDS_SEPARATOR = ",";
+  public static final String FIELDS_SEPARATOR = ",";
   static final String VALUE_SEPARATOR = "=";
 
 
@@ -16,7 +21,7 @@ public class App {
   private static File sharedDir;
 
   static InMemoryStorage<SharedFile> storage = null;
-  static final TupleType Triple = TupleType.DefaultFactory.create(
+  public static final TupleType Triple = TupleType.DefaultFactory.create(
     String.class,
     String.class,
     String.class
@@ -54,8 +59,7 @@ public class App {
     }
 
     // Initialize in-memory DB connection
-    //StringStorage.initialize();
-    storage = new InMemoryStorage<>();
+    storage = new InMemoryStorage<>(new SharedFileSerializer(), new SharedFileDeserializer());
 
     // Walk shared directory directory for indexing files
     if (cmd.hasOption('w')) {
@@ -72,7 +76,9 @@ public class App {
 
     // TEST - TEST - TEST - TEST - TEST - TEST
     SharedFile foo = storage.get(1);
-    System.out.println(foo.getPath());
+    if (foo != null) {
+      System.out.println(foo.getPath());
+    }
     // TEST - TEST - TEST - TEST - TEST - TEST
 
     // Watch the shared directory directory recursively for changes
